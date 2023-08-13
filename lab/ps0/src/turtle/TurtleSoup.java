@@ -5,6 +5,7 @@ package turtle;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Random;
 
 public class TurtleSoup {
 
@@ -15,7 +16,13 @@ public class TurtleSoup {
      * @param sideLength length of each side
      */
     public static void drawSquare(Turtle turtle, int sideLength) {
-        throw new RuntimeException("implement me!");
+        turtle.forward(sideLength);
+        turtle.turn(90.0);
+        turtle.forward(sideLength);
+        turtle.turn(90.0);
+        turtle.forward(sideLength);
+        turtle.turn(90.0);
+        turtle.forward(sideLength);
     }
 
     /**
@@ -28,7 +35,10 @@ public class TurtleSoup {
      * @return angle in degrees, where 0 <= angle < 360
      */
     public static double calculateRegularPolygonAngle(int sides) {
-        throw new RuntimeException("implement me!");
+        if (sides <= 2) {
+            throw new IllegalArgumentException("Sides must be > 2!");
+        }
+        return (sides - 2) * 180.0 / sides;
     }
 
     /**
@@ -42,7 +52,10 @@ public class TurtleSoup {
      * @return the integer number of sides
      */
     public static int calculatePolygonSidesFromAngle(double angle) {
-        throw new RuntimeException("implement me!");
+        if (angle <= 0 || angle >= 180) {
+            throw new IllegalArgumentException("Angle must be > 0 and < 180!");
+        }
+        return (int) Math.round(360.0 / (180.0 - angle));
     }
 
     /**
@@ -55,7 +68,13 @@ public class TurtleSoup {
      * @param sideLength length of each side
      */
     public static void drawRegularPolygon(Turtle turtle, int sides, int sideLength) {
-        throw new RuntimeException("implement me!");
+        if (sides <= 2) {
+            throw new IllegalArgumentException("Sides must be > 2!");
+        }
+        for (int i = 0; i < sides; i++) {
+            turtle.forward(sideLength);
+            turtle.turn(180.0 - calculateRegularPolygonAngle(sides));
+        }
     }
 
     /**
@@ -79,7 +98,9 @@ public class TurtleSoup {
      */
     public static double calculateHeadingToPoint(double currentHeading, int currentX, int currentY,
                                                  int targetX, int targetY) {
-        throw new RuntimeException("implement me!");
+        double angleRadians = Math.atan2(targetX - currentX, targetY - currentY );
+        double angleDegrees = Math.toDegrees(angleRadians);
+        return (angleDegrees - currentHeading + 360.0) % 360.0;
     }
 
     /**
@@ -97,7 +118,18 @@ public class TurtleSoup {
      *         otherwise of size (# of points) - 1
      */
     public static List<Double> calculateHeadings(List<Integer> xCoords, List<Integer> yCoords) {
-        throw new RuntimeException("implement me!");
+        if (xCoords.size() != yCoords.size()) {
+            throw new IllegalArgumentException("xCoords and yCoords must be the same length!");
+        }
+        List<Double> headings = new ArrayList<>();
+        double currentHeading = 0.0;
+        for (int i = 0; i < xCoords.size() - 1; i++) {
+            double heading = calculateHeadingToPoint(currentHeading, xCoords.get(i), yCoords.get(i),
+                    xCoords.get(i + 1), yCoords.get(i + 1));
+            headings.add(heading);
+            currentHeading = (currentHeading + heading) % 360.0;
+        }
+        return headings;
     }
 
     /**
@@ -109,7 +141,11 @@ public class TurtleSoup {
      * @param turtle the turtle context
      */
     public static void drawPersonalArt(Turtle turtle) {
-        throw new RuntimeException("implement me!");
+        Random random = new Random();
+        for (int i = 0; i < 100; i++) {
+            turtle.forward(random.nextInt(100));
+            turtle.turn(random.nextInt(360));
+        }
     }
 
     /**
@@ -122,8 +158,8 @@ public class TurtleSoup {
     public static void main(String args[]) {
         DrawableTurtle turtle = new DrawableTurtle();
 
-        drawSquare(turtle, 40);
-
+        drawRegularPolygon(turtle, 10, 40);
+//        drawPersonalArt(turtle);
         // draw the window
         turtle.draw();
     }
