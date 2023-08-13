@@ -3,6 +3,7 @@
  */
 package twitter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -27,7 +28,13 @@ public class Filter {
      *         in the same order as in the input list.
      */
     public static List<Tweet> writtenBy(List<Tweet> tweets, String username) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> tweetsByUser = new ArrayList<Tweet>();
+        for (Tweet tweet : tweets) {
+            if (tweet.getAuthor().equals(username)) {
+                tweetsByUser.add(tweet);
+            }
+        }
+        return tweetsByUser;
     }
 
     /**
@@ -41,7 +48,13 @@ public class Filter {
      *         in the same order as in the input list.
      */
     public static List<Tweet> inTimespan(List<Tweet> tweets, Timespan timespan) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> tweetsInTimespan = new ArrayList<Tweet>();
+        for (Tweet tweet : tweets) {
+            if (tweet.getTimestamp().isAfter(timespan.getStart()) && tweet.getTimestamp().isBefore(timespan.getEnd())) {
+                tweetsInTimespan.add(tweet);
+            }
+        }
+        return tweetsInTimespan;
     }
 
     /**
@@ -60,7 +73,16 @@ public class Filter {
      *         same order as in the input list.
      */
     public static List<Tweet> containing(List<Tweet> tweets, List<String> words) {
-        throw new RuntimeException("not implemented");
+        List<Tweet> tweetsContainingWords = new ArrayList<Tweet>();
+        for (Tweet tweet : tweets) {
+            for (String word : words) {
+                if (tweet.getText().toLowerCase().contains(word.toLowerCase())) {
+                    tweetsContainingWords.add(tweet);
+                    break;
+                }
+            }
+        }
+        return tweetsContainingWords;
     }
 
 }
