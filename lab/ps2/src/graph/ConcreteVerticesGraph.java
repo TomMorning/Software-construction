@@ -11,9 +11,9 @@ import java.util.stream.Collectors;
  * 
  * <p>PS2 instructions: you MUST use the provided rep.
  */
-public class ConcreteVerticesGraph implements Graph<String> {
+public class ConcreteVerticesGraph<L> implements Graph<L> {
     
-    private final List<Vertex> vertices = new ArrayList<>();
+    private final List<Vertex<L>> vertices = new ArrayList<>();
 
     // Abstraction function:
     // Represents a graph where each Vertex in the 'vertices' list is a node in the graph.
@@ -31,8 +31,8 @@ public class ConcreteVerticesGraph implements Graph<String> {
     
     // TODO checkRep
     private void checkRep() {
-        Set<String> labels = new HashSet<>();
-        for (Vertex v : vertices) {
+        Set<L> labels = new HashSet<>();
+        for (Vertex<L> v : vertices) {
             assert !labels.contains(v.getLabel()) : "Duplicate vertex found";
             labels.add(v.getLabel());
         }
@@ -45,7 +45,8 @@ public class ConcreteVerticesGraph implements Graph<String> {
      * @param vertex the label of the vertex to add
      * @return true if the vertex was added, false if it already existed
      */
-    @Override public boolean add(String vertex) {
+    @Override
+    public boolean add(L vertex) {
         checkRep();
         for (Vertex v : vertices) {
             if (v.getLabel().equals(vertex)) {
@@ -65,7 +66,8 @@ public class ConcreteVerticesGraph implements Graph<String> {
      * @param weight the weight of the edge
      * @return the previous weight of the edge, or 0 if the edge did not exist
      */
-    @Override public int set(String source, String target, int weight) {
+    @Override
+    public int set(L source, L target, int weight) {
         checkRep();
         Vertex sourceVertex = findOrCreate(source);
         Vertex targetVertex = findOrCreate(target);
@@ -88,7 +90,8 @@ public class ConcreteVerticesGraph implements Graph<String> {
      * @param vertex the label of the vertex to remove
      * @return true if the vertex was removed, false if it did not exist
      */
-    @Override public boolean remove(String vertex) {
+    @Override
+    public boolean remove(L vertex) {
         checkRep();
         Vertex v = find(vertex);
         if (v == null) {
@@ -109,7 +112,8 @@ public class ConcreteVerticesGraph implements Graph<String> {
      *
      * @return a set of all vertex labels
      */
-    @Override public Set<String> vertices() {
+    @Override
+    public Set<L> vertices() {
         checkRep();
         return vertices.stream().map(Vertex::getLabel).collect(Collectors.toSet());
     }
@@ -120,7 +124,8 @@ public class ConcreteVerticesGraph implements Graph<String> {
      * @param target the label of the target vertex
      * @return a map where keys are source vertex labels and values are edge weights
      */
-    @Override public Map<String, Integer> sources(String target) {
+    @Override
+    public Map<L, Integer> sources(L target) {
         checkRep();
         Vertex v = find(target);
         if (v == null) {
@@ -135,7 +140,8 @@ public class ConcreteVerticesGraph implements Graph<String> {
      * @param source the label of the source vertex
      * @return a map where keys are target vertex labels and values are edge weights
      */
-    @Override public Map<String, Integer> targets(String source) {
+    @Override
+    public Map<L, Integer> targets(L source) {
         checkRep();
         Vertex v = find(source);
         if (v == null) {
@@ -145,7 +151,7 @@ public class ConcreteVerticesGraph implements Graph<String> {
     }
 
     // Helper function to find a Vertex by label, returns null if not found.
-    private Vertex find(String label) {
+    private Vertex find(L label) {
         for (Vertex v : vertices) {
             if (v.getLabel().equals(label)) {
                 return v;
@@ -155,7 +161,7 @@ public class ConcreteVerticesGraph implements Graph<String> {
     }
 
     // Helper function to find a Vertex by label, or create and return a new one if not found.
-    private Vertex findOrCreate(String label) {
+    private Vertex findOrCreate(L label) {
         Vertex v = find(label);
         if (v == null) {
             v = new Vertex(label);
@@ -180,12 +186,12 @@ public class ConcreteVerticesGraph implements Graph<String> {
  * <p>PS2 instructions: the specification and implementation of this class is
  * up to you.
  */
-class Vertex {
+class Vertex<L> {
     
     // TODO fields
-    private final String label;
-    private final Map<String, Integer> sources = new HashMap<>();
-    private final Map<String, Integer> targets = new HashMap<>();
+    private final L label;
+    private final Map<L, Integer> sources = new HashMap<>();
+    private final Map<L, Integer> targets = new HashMap<>();
 
     // Abstraction function:
     // Represents a node in a graph with label 'label'. Incoming edges are stored in 'sources'
@@ -193,11 +199,11 @@ class Vertex {
     // Representation invariant:
     // No key in 'sources' or 'targets' is equal to 'label'.
     // Safety from rep exposure:
-    // All fields are private. 'label' is an immutable String.
+    // All fields are private. 'label' is an immutable L.
     // 'sources' and 'targets' are never returned directly; defensive copies are used.
     
     // TODO constructor
-    public Vertex(String label) {
+    public Vertex(L label) {
         this.label = label;
         checkRep();
     }
@@ -211,13 +217,13 @@ class Vertex {
     // TODO methods
 
 
-    public Map<String, Integer> getSources() {
+    public Map<L, Integer> getSources() {
         checkRep();
         return new HashMap<>(sources);
     }
 
 
-    public Map<String, Integer> getTargets() {
+    public Map<L, Integer> getTargets() {
         checkRep();
         return new HashMap<>(targets);
     }
@@ -229,7 +235,7 @@ class Vertex {
      * @param weight the weight of the edge
      * @return previous weight of the edge, or 0 if there was no such edge
      */
-    public int addTarget(String target, int weight) {
+    public int addTarget(L target, int weight) {
         checkRep();
         Optional<Integer> result = Optional.ofNullable(targets.put(target, weight));
         return result.orElse(0);
@@ -242,7 +248,7 @@ class Vertex {
      * @param weight the weight of the edge
      * @return previous weight of the edge, or 0 if there was no such edge
      */
-    public int addSource(String source, int weight) {
+    public int addSource(L source, int weight) {
         checkRep();
         Optional<Integer> result = Optional.ofNullable(sources.put(source, weight));
         return result.orElse(0);
@@ -254,7 +260,7 @@ class Vertex {
      * @param target the target vertex label
      * @return the weight of the removed edge, or 0 if there was no such edge
      */
-    public int removeTarget(String target) {
+    public int removeTarget(L target) {
         checkRep();
         Optional<Integer> result = Optional.ofNullable(targets.remove(target));
         return result.orElse(0);
@@ -266,7 +272,7 @@ class Vertex {
      * @param source the source vertex label
      * @return the weight of the removed edge, or 0 if there was no such edge
      */
-    public int removeSource(String source) {
+    public int removeSource(L source) {
         checkRep();
         Optional<Integer> result = Optional.ofNullable(sources.remove(source));
         return result.orElse(0);
@@ -277,14 +283,18 @@ class Vertex {
      *
      * @return the label of the vertex
      */
-    public String getLabel() {
+    public L getLabel() {
         return label;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         Vertex vertex = (Vertex) o;
         return Objects.equals(label, vertex.label);
     }
@@ -307,7 +317,7 @@ class Vertex {
      * @param target the target vertex label
      * @return the weight of the edge, or 0 if there is no such edge
      */
-    public int getWeight(String target) {
+    public int getWeight(L target) {
         checkRep();
         return targets.getOrDefault(target, 0);
     }

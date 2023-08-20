@@ -15,13 +15,13 @@ import java.util.stream.Collectors;
  * 
  * <p>PS2 instructions: you MUST use the provided rep.
  */
-public class ConcreteEdgesGraph implements Graph<String> {
+public class ConcreteEdgesGraph<L> implements Graph<L> {
     
-    private final Set<String> vertices = new HashSet<>();
-    private final List<Edge> edges = new ArrayList<>();
+    private final Set<L> vertices = new HashSet<>();
+    private final List<Edge<L>> edges = new ArrayList<>();
 
     // Abstraction function:
-    //  AF(vertices, edges) = a graph where each string in `vertices`
+    //  AF(vertices, edges) = a graph where each L in `vertices`
     //  represents a vertex in the graph and each edge in `edges`
     //  represents a directed, weighted edge between two nodes in the graph.
 
@@ -59,7 +59,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
      * @param vertex the vertex
      * @return true if successfully added, false otherwise
      */
-    @Override public boolean add(String vertex) {
+    @Override public boolean add(L vertex) {
         checkRep();
         if (!vertices.contains(vertex)) {
             vertices.add(vertex);
@@ -77,7 +77,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
      * @param weight the weight
      * @return the previous weight, or 0 if no such edge existed
      */
-    @Override public int set(String source, String target, int weight) {
+    @Override public int set(L source, L target, int weight) {
         checkRep();
         if (weight < 0) {
             throw new IllegalArgumentException("weight must be non-negative");
@@ -110,7 +110,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
      * @param vertex the vertex
      * @return true if successfully removed, false otherwise
      */
-    @Override public boolean remove(String vertex) {
+    @Override public boolean remove(L vertex) {
         checkRep();
         boolean removed = vertices.remove(vertex);
         edges.removeIf(e -> e.getSource().equals(vertex) || e.getTarget().equals(vertex));
@@ -123,7 +123,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
      *
      * @return the set of vertices
      */
-    @Override public Set<String> vertices() {
+    @Override public Set<L> vertices() {
         return new HashSet<>(vertices);
     }
 
@@ -133,7 +133,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
      * @param target the target vertex
      * @return a map where the keys are source vertices and the values are weights
      */
-    @Override public Map<String, Integer> sources(String target) {
+    @Override public Map<L, Integer> sources(L target) {
         checkRep();
         return edges.stream()
                 .filter(e -> e.getTarget().equals(target))
@@ -146,7 +146,7 @@ public class ConcreteEdgesGraph implements Graph<String> {
      * @param source the source vertex
      * @return a map where the keys are target vertices and the values are weights
      */
-    @Override public Map<String, Integer> targets(String source) {
+    @Override public Map<L, Integer> targets(L source) {
         checkRep();
         return edges.stream()
                 .filter(e -> e.getSource().equals(source))
@@ -168,11 +168,11 @@ public class ConcreteEdgesGraph implements Graph<String> {
  * <p>PS2 instructions: the specification and implementation of this class is
  * up to you.
  */
-class Edge {
+class Edge<L> {
     
     // TODO fields
-    private final String source;
-    private final String target;
+    private final L source;
+    private final L target;
     private final int weight;
 
     // Abstraction function:
@@ -185,10 +185,10 @@ class Edge {
 
     // Safety from rep exposure:
     //   All fields are private and final.
-    //   String is immutable.
+    //   L is immutable.
     
     // TODO constructor
-    public Edge(String source, String target, int weight) {
+    public Edge(L source, L target, int weight) {
         this.source = source;
         this.target = target;
         this.weight = weight;
@@ -203,11 +203,11 @@ class Edge {
     }
     
     // TODO methods
-    public String getSource() {
+    public L getSource() {
         return source;
     }
 
-    public String getTarget() {
+    public L getTarget() {
         return target;
     }
 
