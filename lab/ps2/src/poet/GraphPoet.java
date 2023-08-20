@@ -5,6 +5,12 @@ package poet;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import graph.Graph;
 
@@ -53,13 +59,13 @@ import graph.Graph;
 public class GraphPoet {
     
     private final Graph<String> graph = Graph.empty();
-    
+
     // Abstraction function:
-    //   TODO
+    //   Represents a graph of word affinities based on a given corpus.
     // Representation invariant:
-    //   TODO
+    //   graph is not null
     // Safety from rep exposure:
-    //   TODO
+    //   graph is private and final, and is never returned or passed to any public methods.
     
     /**
      * Create a new poet with the graph from corpus (as described above).
@@ -68,10 +74,27 @@ public class GraphPoet {
      * @throws IOException if the corpus file cannot be found or read
      */
     public GraphPoet(File corpus) throws IOException {
-        throw new RuntimeException("not implemented");
+        try (Stream<String> lines = Files.lines(corpus.toPath())) {
+            List<String> words = lines.flatMap(line -> Arrays.stream(line.split("\\W+")))
+                    .map(String::toLowerCase)
+                    .collect(Collectors.toList());
+
+            for (int i = 0; i < words.size() - 1; i++) {
+                String word1 = words.get(i);
+                String word2 = words.get(i + 1);
+                graph.set(word1, word2, graph.targets(word1).getOrDefault(word2, 0) + 1);
+            }
+        }
+        checkRep();
+
+        // TODO: checkRep();
     }
+
     
     // TODO checkRep
+    private void checkRep() {
+        assert graph != null;
+    }
     
     /**
      * Generate a poem.
@@ -80,9 +103,39 @@ public class GraphPoet {
      * @return poem (as described above)
      */
     public String poem(String input) {
-        throw new RuntimeException("not implemented");
+        List<String> words = Arrays.asList(input.split("\\W+"));
+        StringBuilder poem = new StringBuilder();
+
+        for (int i = 0; i < words.size() - 1; i++) {
+            String word1 = words.get(i).toLowerCase();
+            String word2 = words.get(i + 1).toLowerCase();
+            poem.append(words.get(i)).append(" ");
+
+            Map<String, Integer> bridges1 = graph.targets(word1);
+            Map<String, Integer> bridges2 = graph.targets(word2);
+            String bestBridge = null;
+            int maxWeight = -1;
+
+            for (String bridge : bridges1.keySet()) {
+                if (bridges2.containsKey(bridge) && bridges1.get(bridge) + bridges2.get(bridge) > maxWeight) {
+                    maxWeight = bridges1.get(bridge) + bridges2.get(bridge);
+                    bestBridge = bridge;
+                }
+            }
+
+            if (bestBridge != null) {
+                poem.append(bestBridge).append(" ");
+            }
+        }
+        poem.append(words.get(words.size() - 1));
+
+        return poem.toString();
     }
-    
-    // TODO toString()
+
+
+    @Override
+    public String toString() {
+        return graph.toString();
+    }
     
 }

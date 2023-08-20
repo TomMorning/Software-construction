@@ -7,6 +7,9 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import java.io.File;
+import java.io.IOException;
+
 /**
  * Tests for GraphPoet.
  */
@@ -21,5 +24,11 @@ public class GraphPoetTest {
     }
     
     // TODO tests
-    
+    @Test
+    public void testBasicCorpus() throws IOException {
+        GraphPoet poet = new GraphPoet(new File("test/poet/basicCorpus.txt"));
+        assertEquals("Test of the system.", poet.poem("Test the system."));
+    }
+
+
 }

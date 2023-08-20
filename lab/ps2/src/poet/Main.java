@@ -23,6 +23,17 @@ public class Main {
         final GraphPoet nimoy = new GraphPoet(new File("src/poet/mugar-omni-theater.txt"));
         final String input = "Test the system.";
         System.out.println(input + "\n>>>\n" + nimoy.poem(input));
+
+        final GraphPoet cosmicPoet = new GraphPoet(new File("src/poet/cosmic.txt"));
+
+        String input1 = "Dreamers gaze.";
+        System.out.println(input1 + "\n>>>\n" + cosmicPoet.poem(input1));
+
+        String input2 = "Stars collide.";
+        System.out.println("\n" + input2 + "\n>>>\n" + cosmicPoet.poem(input2));
+
+        String input3 = "Planets shine.";
+        System.out.println("\n" + input3 + "\n>>>\n" + cosmicPoet.poem(input3));
     }
     
 }
