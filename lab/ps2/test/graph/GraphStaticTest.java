@@ -34,5 +34,28 @@ public class GraphStaticTest {
     }
     
     // TODO test other vertex label types in Problem 3.2
-    
+    @Test
+    public void testIntegerLabels() {
+        Graph<Integer> intGraph = Graph.empty();
+
+        assertTrue(intGraph.add(1));
+        assertTrue(intGraph.add(2));
+
+        assertEquals(0, intGraph.set(1, 2, 5));
+        assertEquals(5, intGraph.set(1, 2, 0));
+    }
+
+    @Test
+    public void testCharacterLabels() {
+        Graph<Character> charGraph = Graph.empty();
+
+        assertTrue(charGraph.add('A'));
+        assertTrue(charGraph.add('B'));
+
+        assertEquals(0, charGraph.set('A', 'B', 7));
+        assertEquals(7, charGraph.set('A', 'B', 0));
+    }
+
+
+
 }
