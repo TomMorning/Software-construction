@@ -5,6 +5,7 @@ package minesweeper.server;
 
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
 import java.util.*;
 
 import minesweeper.Board;
@@ -14,7 +15,13 @@ import minesweeper.Board;
  */
 public class MinesweeperServer {
 
-    // System thread safety argument
+    // System thread safety argument:
+    // 1. The server uses a single Board object, but all access/modifications are synchronized on the board itself.
+    // 2. The board itself is a thread-safe datatype.
+    // 3. The handleConnection method handles each client separately, ensuring that only one thread modifies or accesses
+    //    the board for any given client at a time.
+    // 4. All other fields are immutable.
+
     //   TODO Problem 5
 
     /** Default server port. */
@@ -28,6 +35,7 @@ public class MinesweeperServer {
     private final ServerSocket serverSocket;
     /** True if the server should *not* disconnect a client after a BOOM message. */
     private final boolean debug;
+    private final Board board;
 
     // TODO: Abstraction function, rep invariant, rep exposure
 
@@ -38,7 +46,8 @@ public class MinesweeperServer {
      * @param debug debug mode flag
      * @throws IOException if an error occurs opening the server socket
      */
-    public MinesweeperServer(int port, boolean debug) throws IOException {
+    public MinesweeperServer(Board board, int port, boolean debug) throws IOException {
+        this.board = board;
         serverSocket = new ServerSocket(port);
         this.debug = debug;
     }
@@ -77,6 +86,9 @@ public class MinesweeperServer {
                 if (output != null) {
                     // TODO: Consider improving spec of handleRequest to avoid use of null
                     out.println(output);
+                    if (output.equals("bye") && !debug) {
+                        break;
+                    }
                 }
             }
         } finally {
@@ -97,33 +109,49 @@ public class MinesweeperServer {
         if ( ! input.matches(regex)) {
             // invalid input
             // TODO Problem 5
+            return "Invalid input";
         }
         String[] tokens = input.split(" ");
-        if (tokens[0].equals("look")) {
-            // 'look' request
-            // TODO Problem 5
-        } else if (tokens[0].equals("help")) {
-            // 'help' request
-            // TODO Problem 5
-        } else if (tokens[0].equals("bye")) {
-            // 'bye' request
-            // TODO Problem 5
-        } else {
-            int x = Integer.parseInt(tokens[1]);
-            int y = Integer.parseInt(tokens[2]);
-            if (tokens[0].equals("dig")) {
-                // 'dig x y' request
+        synchronized (board) {
+            if (tokens[0].equals("look")) {
+                // 'look' request
                 // TODO Problem 5
-            } else if (tokens[0].equals("flag")) {
-                // 'flag x y' request
+                return board.toString();
+            } else if (tokens[0].equals("help")) {
+                // 'help' request
                 // TODO Problem 5
-            } else if (tokens[0].equals("deflag")) {
-                // 'deflag x y' request
+                return "Commands: look, help, bye, dig x y, flag x y, deflag x y";
+            } else if (tokens[0].equals("bye")) {
+                // 'bye' request
                 // TODO Problem 5
+                return "bye";
+            } else {
+                int x = Integer.parseInt(tokens[1]);
+                int y = Integer.parseInt(tokens[2]);
+                if (tokens[0].equals("dig")) {
+                    // 'dig x y' request
+                    // TODO Problem 5
+                    if (board.dig(x, y)) {
+                        if (!debug) {
+                            return "BOOM!";
+                        }
+                    }
+                    return board.toString();
+                } else if (tokens[0].equals("flag")) {
+                    // 'flag x y' request
+                    // TODO Problem 5
+                    board.flag(x, y);
+                    return board.toString();
+                } else if (tokens[0].equals("deflag")) {
+                    // 'deflag x y' request
+                    // TODO Problem 5
+                    board.deflag(x, y);
+                    return board.toString();
+                }
             }
         }
         // TODO: Should never get here, make sure to return in each of the cases above
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     /**
@@ -201,6 +229,7 @@ public class MinesweeperServer {
                         sizeX = -1;
                         sizeY = -1;
                         file = Optional.of(new File(arguments.remove()));
+                        System.out.println(System.getProperty("user.dir"));
                         if ( ! file.get().isFile()) {
                             throw new IllegalArgumentException("file not found: \"" + file.get() + "\"");
                         }
@@ -269,8 +298,27 @@ public class MinesweeperServer {
     public static void runMinesweeperServer(boolean debug, Optional<File> file, int sizeX, int sizeY, int port) throws IOException {
         
         // TODO: Continue implementation here in problem 4
-        
-        MinesweeperServer server = new MinesweeperServer(port, debug);
+        Board board;
+        if (file.isPresent()) {
+            // Load board from file
+            List<String> lines = Files.readAllLines(file.get().toPath());
+            int x = Integer.parseInt(lines.get(0).split(" ")[0]);
+            int y = Integer.parseInt(lines.get(0).split(" ")[1]);
+
+            Board.Square[][] cells = new Board.Square[y][x];
+            for (int i = 1; i <= y; i++) {
+                String[] values = lines.get(i).split(" ");
+                for (int j = 0; j < x; j++) {
+                    cells[i-1][j] = Board.Square.getSquare(Integer.parseInt(values[j]));
+                }
+            }
+
+            board = new Board(cells);
+        } else {
+            // Generate random board of sizeX x sizeY
+            board = new Board(sizeX, sizeY, 1);
+        }
+        MinesweeperServer server = new MinesweeperServer(board, port, debug);
         server.serve();
     }
 }
